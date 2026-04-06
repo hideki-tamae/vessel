@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 // 修正前: import { prisma } from '@/lib/prisma';
-import { prisma } from '../../../../lib/prisma';
+import { prisma } from '@/lib/prisma';
+// 修正後（本来の姿）
+// ✅ この記述が tsconfig.json の "@/*": ["src/*"] と連動します
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

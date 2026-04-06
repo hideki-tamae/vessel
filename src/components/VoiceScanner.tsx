@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAudioAnalysis } from '../hooks/useAudioAnalysis';
-import { useCareBridge } from '../hooks/useCareBridge'; // Web3 bridge
-import { analyzePolyvagalState } from '../src/utils/polyvagalScoring';
-import AudioAnalyzer from './AudioAnalyzer';
+// ✅ エイリアス（@/）による統治への完全移行
+import { useAudioAnalysis } from '@/hooks/useAudioAnalysis';
+import { useCareBridge } from '@/hooks/useCareBridge';
+import { analyzePolyvagalState } from '@/utils/polyvagalScoring';
+import AudioAnalyzer from '@/components/AudioAnalyzer';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbx8yj8xo1ZHEtym5wcHf9FgEc3VYjo1bmN5vqFxdln8OdX2YNPuzoYrLBGualBWD9SXmQ/exec';
 
@@ -82,7 +83,7 @@ export default function VoiceScanner() {
       neuralState: normalization.dominantState,
       location,
       condition,
-      version: 'Satsuma-v1.1', // ★文明OSの最新Ver
+      version: 'Satsuma-v1.1',
       timestamp: normalization.timestamp,
     };
 
@@ -94,10 +95,6 @@ export default function VoiceScanner() {
     }).catch(err => console.error('GAS送信エラー:', err));
   };
 
-  /**
-   * HAIS(DB)への記録
-   * ★ 証跡拡張: logicVersionを送出し、バックエンド側で「罠」を判定させる
-   */
   const saveToHAIS = async (walletAddress: string, analysis: any, rawMetrics: any) => {
     setIsSavingToDB(true);
     try {
@@ -108,7 +105,7 @@ export default function VoiceScanner() {
           walletAddress: walletAddress,
           omegaScore: analysis.omegaScore,
           neuralState: analysis.dominantState,
-          logicVersion: 'Satsuma-v1.1', // ★ 証跡の刻印
+          logicVersion: 'Satsuma-v1.1',
           ventralScore: analysis.ventralScore,
           sympatheticScore: analysis.sympatheticScore,
           dorsalScore: analysis.dorsalScore,
@@ -120,9 +117,6 @@ export default function VoiceScanner() {
       });
       const data = await response.json();
       console.log('✅ HAIS Record & Calibration Check Saved:', data);
-
-      // ★ 移植機としての完成: DB保存直後に提案があればUIを更新させるためのヒント
-      // (親コンポーネントのuseSyncProposalが自動で再フェッチする仕組みがあれば表示されます)
     } catch (error) {
       console.error('❌ Failed to save to HAIS:', error);
     } finally {
@@ -140,7 +134,6 @@ export default function VoiceScanner() {
       const success = await mintProofOfCare(omegaScore);
       if (success) {
         setMinted(true);
-        // ★ 保存時に「罠検知」ロジックがバックエンドで走り、Sync提案が準備される
         await saveToHAIS(address, analysisResult, results);
       }
     } catch (error) {
@@ -152,7 +145,6 @@ export default function VoiceScanner() {
 
   return (
     <div style={styles.page}>
-      {/* 既存のヘッダー・入力UI */}
       <header style={styles.hdr}>
         <div style={styles.hdrEyebrow}>ACES CARE HUB JAPAN</div>
         <div style={styles.hdrTitle}>HAIS</div>
@@ -170,7 +162,6 @@ export default function VoiceScanner() {
         </div>
       </div>
 
-      {/* スキャナー心臓部 */}
       <div style={styles.card}>
         <div style={styles.scannerWrap}>
           <button onClick={() => startScan(location, condition, handleComplete)} disabled={scanning} style={{ ...styles.orbShell, opacity: scanning ? 0.7 : 1 }}>
@@ -190,7 +181,6 @@ export default function VoiceScanner() {
         </div>
       </div>
 
-      {/* 解析結果表示 */}
       {analysisResult && s && (
         <div style={styles.results}>
           <div style={{ ...styles.resultStateCard, background: s.bg }}>
@@ -217,7 +207,6 @@ export default function VoiceScanner() {
             </button>
           </div>
 
-          {/* メトリクス表示等はそのまま維持 */}
           <div style={styles.metadataCard}>
             <div style={styles.metadataRow}>
               <span>Omega Score (SLNA)</span>
@@ -230,7 +219,6 @@ export default function VoiceScanner() {
   );
 }
 
-// styles は既存のものを継承（省略なし）
 const styles: Record<string, any> = {
   page: { maxWidth: '480px', margin: '0 auto', padding: '0 20px 80px', background: '#0a0c12', color: '#e8eaf0', minHeight: '100vh', fontFamily: "'Noto Sans JP', sans-serif", position: 'relative' },
   hdr: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '52px 0 40px', gap: '6px' },

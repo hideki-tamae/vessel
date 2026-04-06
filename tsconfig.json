@@ -22,17 +22,18 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".",
     "paths": {
       "@/*": [
-        "./*"
+        "src/*"
       ]
-    },
-    "baseUrl": "."
+    }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "src/**/*",
     ".next/types/**/*.ts",
     "hardhat.config.ts"
   ],

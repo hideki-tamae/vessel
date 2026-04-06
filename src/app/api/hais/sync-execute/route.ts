@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+// 修正後（本来の姿）
 
 export async function POST(request: Request) {
   const { userId } = await request.json();
