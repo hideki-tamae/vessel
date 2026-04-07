@@ -1,21 +1,22 @@
-// app/policy/en/page.tsx
+// src/app/policy/en/page.tsx
 
 'use client'; 
 
 import React from "react";
-// ✅ 修正後のパス: utilsフォルダ経由でインポート
 import AntiCopyWrapper from "../../../components/utils/AntiCopyWrapper";
 import Link from 'next/link'; 
 import Image from 'next/image';
 
-// 画像ファイルのインポート（public/images内のファイル名に合わせて調整してください）
-import EnCover from "/public/images/En0.png"; 
-import EnPage1 from "/public/images/En1.png"; 
-import EnPage2 from "/public/images/En2.png";
-import EnPage3 from "/public/images/En3.png";
-import EnPage4 from "/public/images/En4.png";
-
 const PolicyEnPage = () => {
+  // 画像パスの定義（publicを除いたルートパスを指定）
+  const images = {
+    cover: "/images/En0.png",
+    page1: "/images/En1.png",
+    page2: "/images/En2.png",
+    page3: "/images/En3.png",
+    page4: "/images/En4.png",
+  };
+
   return (
     <div className="min-h-screen py-16 md:py-24 bg-black text-white">
       <div className="mx-auto max-w-4xl px-4 lg:px-0">
@@ -27,9 +28,8 @@ const PolicyEnPage = () => {
           </h1>
           <p className="text-xl text-gray-400">English Version / View Only - Copyright Protected</p>
           
-          {/* 🌟 日本語版へのリンク */}
           <div className="mt-4 mb-4 text-center">
-              <Link href="/policy" passHref>
+              <Link href="/policy">
                   <span className="text-sm text-gray-500 hover:text-white transition-colors cursor-pointer border-b border-gray-600 hover:border-white">
                       ← View Japanese Version
                   </span>
@@ -41,12 +41,6 @@ const PolicyEnPage = () => {
               PDF download has been disabled. <br/>The content below is view-only and protected against copying.
             </h3>
           </div>
-          
-          {/* <Link href="/" passHref>
-             <button className="mt-6 px-4 py-2 text-sm text-red-300 border border-red-500/50 rounded-full hover:bg-red-900/20 transition-colors">
-                Back to LP Top
-             </button>
-          </Link> */}
         </div>
 
         {/* --- コンテンツ --- */}
@@ -55,44 +49,59 @@ const PolicyEnPage = () => {
             
             {/* Cover */}
             <h2 className="text-3xl font-bold text-white pt-10 border-t border-red-700">Cover</h2>
-            <Image 
-              src={EnCover} 
-              alt="Policy Cover Page" 
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10" 
-              priority // カバー画像は優先読み込み
-            />
+            <div className="relative w-full aspect-[1/1.414]"> {/* A4比率の維持 */}
+              <Image 
+                src={images.cover} 
+                alt="Policy Cover Page" 
+                fill
+                className="object-contain rounded-xl shadow-2xl border border-white/10" 
+                priority
+              />
+            </div>
 
             {/* Page 1 */}
             <h2 className="text-3xl font-bold text-white pt-10 border-t border-red-700">Page 1 (Introduction/Challenge)</h2>
-            <Image 
-              src={EnPage1} 
-              alt="Policy Page 1" 
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10" 
-            />
+            <div className="relative w-full aspect-[1/1.414]">
+              <Image 
+                src={images.page1} 
+                alt="Policy Page 1" 
+                fill
+                className="object-contain rounded-xl shadow-2xl border border-white/10" 
+              />
+            </div>
             
             {/* Page 2 */}
             <h2 className="text-3xl font-bold text-white pt-10 border-t border-red-700">Page 2 (Tech/Scientific Basis)</h2>
-            <Image 
-              src={EnPage2} 
-              alt="Policy Page 2" 
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10" 
-            />
+            <div className="relative w-full aspect-[1/1.414]">
+              <Image 
+                src={images.page2} 
+                alt="Policy Page 2" 
+                fill
+                className="object-contain rounded-xl shadow-2xl border border-white/10" 
+              />
+            </div>
 
             {/* Page 3 */}
             <h2 className="text-3xl font-bold text-white pt-10 border-t border-red-700">Page 3 (Resilience/Economic Rationality)</h2>
-            <Image 
-              src={EnPage3} 
-              alt="Policy Page 3" 
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10" 
-            />
+            <div className="relative w-full aspect-[1/1.414]">
+              <Image 
+                src={images.page3} 
+                alt="Policy Page 3" 
+                fill
+                className="object-contain rounded-xl shadow-2xl border border-white/10" 
+              />
+            </div>
 
             {/* Page 4 */}
             <h2 className="text-3xl font-bold text-white pt-10 border-t border-red-700">Page 4 (Roadmap/Conclusion)</h2>
-            <Image 
-              src={EnPage4} 
-              alt="Policy Page 4" 
-              className="w-full h-auto rounded-xl shadow-2xl border border-white/10" 
-            />
+            <div className="relative w-full aspect-[1/1.414]">
+              <Image 
+                src={images.page4} 
+                alt="Policy Page 4" 
+                fill
+                className="object-contain rounded-xl shadow-2xl border border-white/10" 
+              />
+            </div>
 
           </div>
         </AntiCopyWrapper>
