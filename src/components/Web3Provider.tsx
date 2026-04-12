@@ -15,6 +15,7 @@ import { WagmiProvider, createConfig, http } from 'wagmi';
 import { mainnet, polygon, sepolia } from 'wagmi/chains';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
+const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
 
 const connectors = connectorsForWallets(
   [
@@ -31,7 +32,7 @@ const config = createConfig({
   chains: [sepolia, mainnet, polygon],
   transports: {
     [sepolia.id]: http(),
-    [mainnet.id]: http(),
+    [mainnet.id]: MAINNET_RPC_URL ? http(MAINNET_RPC_URL) : http(),
     [polygon.id]: http(),
   },
   connectors,

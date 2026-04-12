@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 // ✅ エイリアス（@/）による統治への完全移行
 import { useAudioAnalysis } from '@/hooks/useAudioAnalysis';
 import { useCareBridge } from '@/hooks/useCareBridge';
@@ -50,7 +50,7 @@ const STATES: Record<string, any> = {
   },
 };
 
-export default function VoiceScanner() {
+export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (payload: any) => void } = {}) {
   const [user, setUser] = useState<string>('');
   const [location, setLocation] = useState<string>('');
   const [condition, setCondition] = useState<string>('');
@@ -60,6 +60,48 @@ export default function VoiceScanner() {
   const { scanning, progress, countdown, status, results, startScan, analyserRef } = useAudioAnalysis();
   const { mintProofOfCare, isMinting, address } = useCareBridge();
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+
+  // ============================================================================
+  // RATE LIMIT GUARD (1000ms debounce)
+  // - 音声解析結果の外部送信（GAS / API）を1秒に1回へ制限
+  // ============================================================================
+  const debounce = useCallback(<T extends (...args: any[]) => void>(fn: T, waitMs: number) => {
+    let t: ReturnType<typeof setTimeout> | null = null;
+    let lastArgs: Parameters<T> | null = null;
+    return (...args: Parameters<T>) => {
+      lastArgs = args;
+      if (t) clearTimeout(t);
+      t = setTimeout(() => {
+        if (lastArgs) fn(...lastArgs);
+        t = null;
+        lastArgs = null;
+      }, waitMs);
+    };
+  }, []);
+
+  const sendToGasDebounced = useMemo(
+    () =>
+      debounce((payload: any) => {
+        fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        }).catch(err => console.error('GAS送信エラー:', err));
+      }, 1000),
+    [debounce]
+  );
+
+  const lastHaisPostAtRef = useRef(0);
+
+  const ensureMinInterval = useCallback(async (minIntervalMs: number, lastAtRef: MutableRefObject<number>) => {
+    const now = Date.now();
+    const elapsed = now - lastAtRef.current;
+    if (elapsed < minIntervalMs) {
+      await new Promise(resolve => setTimeout(resolve, minIntervalMs - elapsed));
+    }
+    lastAtRef.current = Date.now();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -87,33 +129,34 @@ export default function VoiceScanner() {
       timestamp: normalization.timestamp,
     };
 
-    fetch(GAS_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch(err => console.error('GAS送信エラー:', err));
+    // 送信先を上位のpage.tsxに委譲（単一責任の原則：バックエンド経由でNotion等へルーティングするため）
+    onScanComplete?.(payload);
   };
 
   const saveToHAIS = async (walletAddress: string, analysis: any, rawMetrics: any) => {
     setIsSavingToDB(true);
     try {
+      // 429対策: 連打/再試行でAPIが過密にならないよう、送信を1秒に1回へ制限
+      await ensureMinInterval(1000, lastHaisPostAtRef);
+
+      const payload = {
+        walletAddress: walletAddress,
+        omegaScore: analysis.omegaScore,
+        neuralState: analysis.dominantState,
+        logicVersion: 'Satsuma-v1.1',
+        ventralScore: analysis.ventralScore,
+        sympatheticScore: analysis.sympatheticScore,
+        dorsalScore: analysis.dorsalScore,
+        f0Hz: rawMetrics.f0,
+        jitterPct: rawMetrics.jitter,
+        shimmerPct: rawMetrics.shimmer,
+        hnrDb: rawMetrics.hnr,
+      };
+
       const response = await fetch('/api/hais/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          walletAddress: walletAddress,
-          omegaScore: analysis.omegaScore,
-          neuralState: analysis.dominantState,
-          logicVersion: 'Satsuma-v1.1',
-          ventralScore: analysis.ventralScore,
-          sympatheticScore: analysis.sympatheticScore,
-          dorsalScore: analysis.dorsalScore,
-          f0Hz: rawMetrics.f0,
-          jitterPct: rawMetrics.jitter,
-          shimmerPct: rawMetrics.shimmer,
-          hnrDb: rawMetrics.hnr,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await response.json();
       console.log('✅ HAIS Record & Calibration Check Saved:', data);

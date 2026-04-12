@@ -13,13 +13,18 @@ import {
 } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 
+const MAINNET_RPC_URL = process.env.NEXT_PUBLIC_RPC_URL;
+
 const config = getDefaultConfig({
   appName: 'ACES CARE HUB JAPAN',
   projectId: '08e0e7b17c58fae4b5a53c4ec8f0a7ca', 
   // ★ chains 配列に sepolia を追加
   chains: [mainnet, polygon, sepolia], 
   transports: {
-    [mainnet.id]: http(),
+    // 専用RPCに切替（Rate Limit回避）
+    // 例: Alchemy/Infura の URL を NEXT_PUBLIC_RPC_URL に設定
+    [mainnet.id]: MAINNET_RPC_URL ? http(MAINNET_RPC_URL) : http(),
+    // 他チェーンは、単一のNEXT_PUBLIC_RPC_URLではネットワーク不一致になり得るためデフォルトのまま
     [polygon.id]: http(),
     // ★ sepolia のトランスポートを追加
     [sepolia.id]: http(), 

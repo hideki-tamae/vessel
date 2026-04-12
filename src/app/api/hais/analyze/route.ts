@@ -80,7 +80,8 @@ export async function POST(req: Request) {
     // 4. AI解析（Python側）への非同期リクエスト
     let insightMessage = "AI Architect is processing...";
     try {
-      const pyResponse = await fetch(process.env.CREWAI_BACKEND_URL || 'http://127.0.0.1:8000/analyze', {
+      // Next.js -> Bridge -> Python (backend/)
+      const pyResponse = await fetch(process.env.CREWAI_BRIDGE_URL || 'http://127.0.0.1:3000/api/bridge/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ omegaScore, neuralState, isTrapped: calibration.isTrapped })
