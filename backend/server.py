@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
@@ -19,7 +20,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey, Text, JSON, create_engine
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 # ====================================================
 # 🆕 LLM Router Import
@@ -35,6 +36,43 @@ except ImportError as e:
     llm_router = None
 
 Base = declarative_base()
+
+class User(Base):
+    __tablename__ = 'user'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100))
+    broca_shutdown_detected = Column(Boolean)
+    re_verse_factor_active = Column(Boolean)
+    last_neuroception_state = Column(String(10))
+    care_score = Column(Float)
+    resilience_score = Column(Float)
+    initial_soluna_balance = Column(Float)
+    last_assessment_id = Column(String(36))
+    last_assessment_timestamp = Column(DateTime)
+
+class Assessment(Base):
+    __tablename__ = 'assessment'
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(Integer, ForeignKey('user.id'))
+    text_input = Column(Text)
+    audio_features = Column(JSON)
+    facial_data = Column(JSON)
+    f0_hz = Column(Float)
+    jitter_shimmer = Column(Float)
+    facial_flatness = Column(Float)
+    pupil_dilation = Column(Float)
+    neuroception_state = Column(String(10))
+    broca_offline = Column(Boolean)
+    care_score = Column(Float)
+    soluna_allocated = Column(Float)
+    re_verse_factor_applied = Column(Boolean)
+    timestamp = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    user = relationship("User")
+
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'hais.db')
+engine = create_engine(f'sqlite:///{DB_PATH}', connect_args={"check_same_thread": False})
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # モック/ブリッジ関数
 try:
@@ -145,13 +183,48 @@ async def get_voice_insight(req: VoiceInsightRequest):
     try:
         result = llm_router.route(prompt)
         if result["status"] == "success":
+            insight_text = result["response"]
+            assessment_id = None
+            
+            # --- DB 保存処理 ---
+            db_session = SessionLocal()
+            try:
+                # ユーザーの取得 (存在しない場合は新規作成)
+                user = db_session.query(User).filter(User.name == user_name).first()
+                if not user:
+                    user = User(name=user_name)
+                    db_session.add(user)
+                    db_session.commit()
+                    db_session.refresh(user)
+                
+                # Assessment レコードの作成
+                assessment_id = str(uuid.uuid4())
+                new_assessment = Assessment(
+                    id=assessment_id,
+                    user_id=user.id,
+                    text_input=insight_text,
+                    neuroception_state=req.autonomic_state,
+                    care_score=req.polyvagal_score,
+                    soluna_allocated=token_reward,
+                    f0_hz=req.f0_hz,
+                    jitter_shimmer=req.jitter_pct,
+                    timestamp=datetime.now(JST)
+                )
+                db_session.add(new_assessment)
+                db_session.commit()
+            except Exception as db_e:
+                logger.error(f"DB Save Error: {db_e}")
+            finally:
+                db_session.close()
+
             return {
                 "status": "success",
+                "assessment_id": assessment_id,
                 "user": user_name,
                 "polyvagal_score": req.polyvagal_score,
                 "autonomic_state": req.autonomic_state,
-                "insight": result["response"],
-                "care_token_reward": token_reward,  # 🆕 SOLUNA報酬の提示
+                "insight": insight_text,
+                "care_token_reward": token_reward,
                 "model_used": result["model_used"],
                 "timestamp": datetime.now(JST).isoformat()
             }
