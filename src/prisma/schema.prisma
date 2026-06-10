@@ -1,0 +1,125 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String           @id @default(cuid())
+  email           String?          @unique // メールアドレス。必須ではないが、設定された場合はユニーク
+  passwordHash    String?          // ハッシュ化されたパスワード
+  emailVerified   DateTime?        // メールアドレス確認日時
+
+  walletAddress   String?          @unique // Web3ウォレットアドレス。必須ではないが、設定された場合はユニーク
+  baseAcesScore   Float            @default(4.0)
+  scans           ScanHistory[]
+  peakCalib       PeakCalibration?
+  careActions     CareAction[]
+  claims          Claim[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  // NextAuth.js のアカウントとセッション連携用
+  accounts        Account[]
+  sessions        Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+model Claim {
+  id            String   @id @default(cuid())
+  userId        String?  // ✅ `?` を追加して任意に
+  user          User?    @relation(fields: [userId], references: [id]) // ✅ `?` を追加して任意に
+  walletAddress String?
+  passphrase    String?
+  amount        Float?   // ✅ `?` を追加して任意に
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AdminLog {
+  id        String   @id @default(cuid())
+  action    String
+  targetId  String?
+  details   String?
+  createdAt DateTime @default(now())
+}
+
+model ScanHistory {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  omegaScore   Float
+  neuralState  String
+  logicVersion String   @default("Satsuma-v1.1")
+  f0Hz         Float?
+  jitterPct    Float?
+  shimmerPct   Float?
+  hnrDb        Float?
+  createdAt    DateTime @default(now())
+}
+
+model PeakCalibration {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  peakScore    Float
+  lastScore    Float    @default(0)
+  isTrapped    Boolean  @default(false)
+  proposedSync Boolean  @default(false)
+  syncReasonJa String?
+  syncedAt     DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model CareAction {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  action      String
+  actionType  String?
+  amount      Float
+  impactScore Float    @default(0)
+  createdAt   DateTime @default(now())
+}
