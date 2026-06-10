@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -440,8 +440,8 @@ function MetricStrip() {
   );
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
-export default function SignInPage() {
+// ─── Extracted Content Component ───────────────────────────────────────────────
+function SignInContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/hais/dashboard';
@@ -517,29 +517,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
-      style={{ background: '#04080C' }}
-    >
-      {/* Layers */}
-      <NeuralCanvas />
-      <GrainOverlay />
-
-      {/* Ambient glow — top center */}
-      <div
-        className="fixed pointer-events-none"
-        style={{
-          top: '-120px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '700px',
-          height: '400px',
-          background:
-            'radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.07) 0%, transparent 65%)',
-          zIndex: 0,
-        }}
-      />
-
+    <>
       {/* ── Brand ── */}
       <div className="fixed top-7 left-8 z-20 flex items-center gap-3">
         <div
@@ -923,6 +901,48 @@ export default function SignInPage() {
           HAIS · 医療機関向け高度セキュアシステム · v2.0
         </p>
       </motion.div>
+    </>
+  );
+}
+
+// ─── Main Page Wrapper with Suspense ──────────────────────────────────────────
+export default function SignInPage() {
+  return (
+    <div
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{ background: '#04080C' }}
+    >
+      <NeuralCanvas />
+      <GrainOverlay />
+
+      <div
+        className="fixed pointer-events-none"
+        style={{
+          top: '-120px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '700px',
+          height: '400px',
+          background:
+            'radial-gradient(ellipse at 50% 30%, rgba(16,185,129,0.07) 0%, transparent 65%)',
+          zIndex: 0,
+        }}
+      />
+
+      <Suspense fallback={
+        <div className="relative z-10 w-full max-w-[420px] mx-4 flex justify-center items-center h-64">
+           <motion.svg
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+              width="24" height="24" viewBox="0 0 24 24" fill="none"
+            >
+              <circle cx="12" cy="12" r="10" stroke="rgba(16,185,129,0.2)" strokeWidth="3" />
+              <path fill="rgba(16,185,129,0.8)" d="M4 12a8 8 0 018-8v8H4z" />
+            </motion.svg>
+        </div>
+      }>
+        <SignInContent />
+      </Suspense>
     </div>
   );
 }

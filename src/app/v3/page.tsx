@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAccount } from 'wagmi';
 
-import { AuthGate } from '../../components/AuthGate';
+import AuthGate from '../../components/AuthGate';
 import ProofOfCommitment from '../../components/ProofOfCommitment';
 import ThemeSongPlayer from "@/components/ThemeSongPlayer";
 

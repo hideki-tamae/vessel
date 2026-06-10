@@ -1,7 +1,7 @@
-// 
 // src/app/api/auth/[...nextauth]/route.ts
 
-import NextAuth from 'next-auth';
+import NextAuth, { NextAuthOptions, Session, User } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 // import Web3Provider from '@/lib/auth/web3-provider'; // あなたが作成したWeb3Providerのパス
 import { PrismaAdapter } from '@auth/prisma-adapter';
@@ -10,7 +10,8 @@ import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-export const authOptions = {
+const authOptions: NextAuthOptions = {
+  // @ts-ignore: PrismaAdapterの型定義のバージョン差異による警告を一時的に回避
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -41,13 +42,12 @@ export const authOptions = {
         return {
           id: user.id,
           email: user.email,
-          name: user.name, // 必要に応じて追加
         };
       },
     }),
     // Web3Provider({
     //   // Web3Providerの設定（必要に応じて）
-    //   // 例: chainId, get  Nonce, profile, signinMessageなど
+    //   // 例: chainId, get Nonce, profile, signinMessageなど
     // }),
   ],
   session: {
@@ -57,23 +57,24 @@ export const authOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   pages: {
-    signIn: '/auth/signin', // ここを修正！
-    signOut: '/auth/signout', // 必要に応じて
-    error: '/auth/error', // エラーページ
-    verifyRequest: '/auth/verify-request', // メール認証の場合
-    newUser: '/auth/new-user', // 新規ユーザー登録後のリダイレクト
+    signIn: '/auth/signin',
+    signOut: '/auth/signout',
+    error: '/auth/error',
+    verifyRequest: '/auth/verify-request',
+    newUser: '/auth/new-user',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        // デフォルトのSession型にidプロパティが存在しないため、anyでキャストして代入
+        (session.user as any).id = token.id as string;
       }
       return session;
     },
