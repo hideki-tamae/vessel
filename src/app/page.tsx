@@ -16,7 +16,7 @@ import BetaRecruitment from '../components/BetaRecruitment';
 import Benefits from '../components/Benefits';
 import FinalCTA from '../components/FinalCTA';
 import ProofOfCommitment from '../components/ProofOfCommitment';
-import AuthGate from '../components/AuthGate';
+import { AuthGate } from '../components/AuthGate';
 
 // ★ Civilization OS Core: 神経系とUIのインポート
 import SyncProposal from '../components/SyncProposal';

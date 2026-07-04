@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,29 +10,27 @@ datasource db {
 }
 
 model User {
-  id            String           @id @default(cuid())
-  walletAddress String?          @unique
-  baseAcesScore Float            @default(4.0)
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
-  email         String?          @unique
-  passwordHash  String?
-  careActions   CareAction[]
-  claims        Claim[]
-  peakCalib     PeakCalibration?
-  scans         ScanHistory[]
+  id              String           @id @default(cuid())
+  walletAddress   String           @unique
+  baseAcesScore   Float            @default(4.0)
+  scans           ScanHistory[]
+  peakCalib       PeakCalibration?
+  careActions     CareAction[]
+  claims          Claim[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Claim {
   id            String   @id @default(cuid())
-  userId        String?
+  userId        String?  // ✅ `?` を追加して任意に
+  user          User?    @relation(fields: [userId], references: [id]) // ✅ `?` を追加して任意に
   walletAddress String?
   passphrase    String?
-  amount        Float?
+  amount        Float?   // ✅ `?` を追加して任意に
   status        String   @default("PENDING")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  user          User?    @relation(fields: [userId], references: [id])
 }
 
 model AdminLog {
@@ -44,6 +44,7 @@ model AdminLog {
 model ScanHistory {
   id           String   @id @default(cuid())
   userId       String
+  user         User     @relation(fields: [userId], references: [id])
   omegaScore   Float
   neuralState  String
   logicVersion String   @default("Satsuma-v1.1")
@@ -52,87 +53,29 @@ model ScanHistory {
   shimmerPct   Float?
   hnrDb        Float?
   createdAt    DateTime @default(now())
-  user         User     @relation(fields: [userId], references: [id])
 }
 
 model PeakCalibration {
-  id           String    @id @default(cuid())
-  userId       String    @unique
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
   peakScore    Float
-  lastScore    Float     @default(0)
-  isTrapped    Boolean   @default(false)
-  proposedSync Boolean   @default(false)
+  lastScore    Float    @default(0)
+  isTrapped    Boolean  @default(false)
+  proposedSync Boolean  @default(false)
   syncReasonJa String?
   syncedAt     DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  user         User      @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model CareAction {
   id          String   @id @default(cuid())
   userId      String
+  user        User     @relation(fields: [userId], references: [id])
   action      String
   actionType  String?
   amount      Float
   impactScore Float    @default(0)
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id])
-}
-
-model content_metrics {
-  id                   Int              @id @default(autoincrement())
-  post_id              String?          @db.VarChar(50)
-  date                 DateTime?        @db.Date
-  likes_count          Int?             @default(0)
-  comments_count       Int?             @default(0)
-  views_count          Int?             @default(0)
-  coins_value          Decimal?         @default(0.00) @db.Decimal(10, 2)
-  zenn_likes           Int?             @default(0)
-  linkedin_impressions Int?             @default(0)
-  created_at           DateTime?        @default(now()) @db.Timestamptz(6)
-  paragraph_posts      paragraph_posts? @relation(fields: [post_id], references: [post_id], onDelete: Cascade, onUpdate: NoAction)
-
-  @@unique([post_id, date])
-  @@index([date], map: "idx_content_metrics_date")
-  @@index([post_id], map: "idx_content_metrics_post_id")
-}
-
-model n8n_workflow_logs {
-  id          Int       @id @default(autoincrement())
-  workflow_id String?   @db.VarChar(100)
-  step_name   String?   @db.VarChar(100)
-  status      String?   @db.VarChar(20)
-  message     String?
-  timestamp   DateTime? @default(now()) @db.Timestamptz(6)
-}
-
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model paragraph_posts {
-  id                   Int               @id @default(autoincrement())
-  post_id              String            @unique @db.VarChar(50)
-  title                String            @db.VarChar(255)
-  title_ja             String?           @db.VarChar(255)
-  slug                 String            @unique @db.VarChar(255)
-  body                 String
-  word_count           Int?
-  read_time_minutes    Int?
-  tags                 String[]
-  hashtags             String?
-  language             String?           @db.VarChar(20)
-  paragraph_url        String?           @db.VarChar(500)
-  published_at         DateTime?         @db.Timestamptz(6)
-  created_at           DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at           DateTime?         @default(now()) @db.Timestamptz(6)
-  obsidian_source_file String?           @db.VarChar(500)
-  generated_by         String?           @db.VarChar(100)
-  engagement_metrics   Json?
-  sync_status          String?           @default("published") @db.VarChar(50)
-  zenn_article_id      String?           @db.VarChar(50)
-  linkedin_post_id     String?           @db.VarChar(50)
-  content_metrics      content_metrics[]
-
-  @@index([published_at(sort: Desc)], map: "idx_paragraph_posts_published_at")
-  @@index([sync_status], map: "idx_paragraph_posts_sync_status")
-  @@index([tags], map: "idx_paragraph_posts_tags", type: Gin)
 }
