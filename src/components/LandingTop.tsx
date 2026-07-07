@@ -8,22 +8,23 @@ export default function LandingTop() {
   return (
     <section className="relative w-full h-screen overflow-hidden flex flex-col justify-center items-center text-white bg-[#0B0C15]">
       
-      {/* 1. 背景画像レイヤー (World Class Visual) */}
-      <div 
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: "url('/header-bg.jpg')", // 作成した画像
-          backgroundSize: 'cover',
-          backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      />
+      {/* 1. 背景画像から【背景動画レイヤー】へ変更 (World Class Visual) */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
+      >
+        <source src="/9.mp4" type="video/mp4" />
+        {/* 動画が読み込めない環境向けのフォールバック（既存の静止画） */}
+        <img src="/header-bg.jpg" alt="Universe Background" className="w-full h-full object-cover" />
+      </video>
 
-      {/* 2. オーバーレイ (Atmosphere Layer) */}
+      {/* 2. オーバーレイ (Atmosphere Layer) - 動画の上、コンテンツの背面に位置 */}
       <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/40 via-black/50 to-[#0B0C15]/90" />
 
       {/* 3. メインコンテンツ (Hero Content) */}
-      
       <div className="relative z-20 container mx-auto px-4 flex flex-col items-center text-center">
         
         {/* バッジ: グラスモーフィズム（磨りガラス）エフェクト */}
@@ -69,15 +70,13 @@ export default function LandingTop() {
             <div className="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent z-0"></div>
           </Link>
 
-          {/* セカンダリーボタン (Kindleで体験) - 控えめなスタイルに戻し、コピーを短縮 */}
+          {/* セカンダリーボタン (Kindleで体験) */}
           <a
-            href={KDP_LINK_URL} // KDPリンクを適用
-            target="_blank" // 外部サイトなので別タブで開く
+            href={KDP_LINK_URL}
+            target="_blank"
             rel="noopener noreferrer"
-            // 🚩 修正: セカンダリスタイルに戻す
             className="px-8 py-4 rounded-full border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm text-white font-medium transition-all duration-300 hover:border-white/50"
           >
-            {/* 🚩 修正: コピーを「Kindleで体験」に変更 */}
             Kindleで体験
           </a>
         </div>
