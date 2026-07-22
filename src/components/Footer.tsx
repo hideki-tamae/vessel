@@ -1,12 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { Sparkles, ArrowUpRight } from 'lucide-react'; 
 
 const Footer = () => {
   return (
+    // フッター全体: 上部にグローイングな区切りと深いグラデーション背景を適用
     <footer className="w-full bg-gradient-to-t from-[#020202] to-black text-white py-16 relative mt-12 overflow-hidden">
       
-      {/* 上部グローイング区切り線 */}
+      {/* 上部グローイング区切り線 (ピカピカ部分) */}
       <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent shadow-[0_0_15px_rgba(59,130,246,0.5)]"></div>
 
       <div className="container mx-auto px-6 relative z-10">
@@ -15,7 +15,14 @@ const Footer = () => {
           
           {/* Brand Column */}
           <div className="space-y-6">
-            <h3 className="text-xl font-bold tracking-wider text-white mb-3">ACES CARE HUB JAPAN</h3>
+            <div className="flex items-center gap-3">
+              <img
+                src="/aces-logo.png"
+                alt="ACES CARE HUB JAPAN"
+                className="h-12 w-12 rounded-full object-cover border border-blue-500/30 shadow-lg shadow-blue-900/30"
+              />
+              <h3 className="text-xl font-bold tracking-wider text-white">ACES CARE HUB JAPAN</h3>
+            </div>
             <div className="space-y-2 text-gray-400 text-sm">
               <p className="font-medium text-gray-300">Re-Verse Civilization</p>
               <p>優しさが制度になる文明へ。</p>
@@ -43,7 +50,7 @@ const Footer = () => {
               {/* Intellectual Roots */}
               <li>
                 <a 
-                  href="https://www.notion.so/SOLUNA-The-Intellectual-Roots-2c06197f1e5580288650d94d468a01d2?source=copy_link" 
+                  href="https://www.notion.so/SOLUNA-The-Intellectual-Roots-2c06197f1e5580288650d94d468a01d2" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
@@ -55,34 +62,22 @@ const Footer = () => {
               
               {/* SOLUNA Protocol & Policy */}
               <li>
-                <a 
-                  href="https://soluna-lp.vercel.app/policy" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
-                >
+                <a href="/policy" className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group">
                   <span className="text-cyan-400/50 group-hover:text-blue-400 transition-colors">◆</span> 
                   SOLUNA Protocol & Policy
                 </a>
               </li>
-
               {/* Whitepaper (En/Jp) */}
               <li>
-                <a 
-                  href="https://soluna-lp.vercel.app/whitepaper" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
-                >
+                <a href="/whitepaper" className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group">
                    <span className="text-cyan-400/50 group-hover:text-blue-400 transition-colors">◆</span>
                    Whitepaper (En/Jp)
                 </a>
               </li>
-
               {/* Public Dashboard */}
               <li>
                 <a 
-                  href="https://www.notion.so/SOLUNA-Public-Dashboard-v3-0-Live-2e76197f1e55807085fcfcfb24477103" 
+                  href="https://www.notion.so/Public-Dashboard-2ac6197f1e5580699329eca765fce2f2" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
@@ -102,7 +97,7 @@ const Footer = () => {
               {/* Official Blueprint */}
               <li>
                 <a 
-                  href="https://www.notion.so/Project-SOLUNA-Genesis-The-Blueprint-2bf6197f1e5580b296b0f6faff4c0233?source=copy_link" 
+                  href="https://www.notion.so/Project-SOLUNA-Genesis-The-Blueprint-2bf6197f1e5580b296b0f6faff4c0233" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
@@ -115,8 +110,8 @@ const Footer = () => {
               {/* Security & Audit (Live) */}
               <li>
                 <a 
-                  href="https://soluna-lp.vercel.app/audit"
-                  target="_blank" 
+                  href="/audit"
+                  target="_self" 
                   rel="noopener noreferrer" 
                   className="flex items-center gap-2 group hover:text-blue-400 transition-colors cursor-pointer text-white/80 font-medium"
                 >
@@ -131,8 +126,8 @@ const Footer = () => {
               {/* Transaction Logs (CSV) */}
               <li>
                 <a 
-                  href="https://soluna-lp.vercel.app/audit" 
-                  target="_blank" 
+                  href="/audit" 
+                  target="_self" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors cursor-pointer flex items-center gap-2 text-white/80 font-medium group"
                 >
@@ -161,37 +156,24 @@ const Footer = () => {
           <div className="space-y-6">
             <h3 className="font-bold text-lg text-white">Legal</h3>
             <ul className="space-y-4 text-gray-400 text-sm">
-              
               {/* Privacy Policy */}
               <li>
-                <a 
-                  href="https://soluna-lp.vercel.app/privacy" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
-                >
+                <Link href="/privacy" className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group">
                   <span className="text-gray-500 group-hover:text-blue-400 transition-colors">§</span>
                   Privacy Policy
-                </a>
+                </Link>
               </li>
-
               {/* Terms of Service */}
               <li>
-                <a 
-                  href="https://soluna-lp.vercel.app/terms" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
-                >
+                <Link href="/terms" className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group">
                   <span className="text-gray-500 group-hover:text-blue-400 transition-colors">§</span>
                   Terms of Service
-                </a>
+                </Link>
               </li>
-
               {/* 特定商取引法に基づく表記 */}
               <li>
                 <a 
-                  href="https://aces-care-hub-site-gxl39lxqt-tamatixyan-9214s-projects.vercel.app/legal/tokushoho"
+                  href="https://aces-care-hub-site-ru8w.vercel.app/legal/tokushoho"
                   target="_blank"
                   rel="noopener noreferrer" 
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
