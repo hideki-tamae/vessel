@@ -15,14 +15,7 @@ const Footer = () => {
           
           {/* Brand Column */}
           <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <img
-                src="/aces-logo.png"
-                alt="ACES CARE HUB JAPAN"
-                className="h-12 w-12 rounded-full object-cover border border-blue-500/30 shadow-lg shadow-blue-900/30"
-              />
-              <h3 className="text-xl font-bold tracking-wider text-white">ACES CARE HUB JAPAN</h3>
-            </div>
+            <h3 className="text-xl font-bold tracking-wider text-white mb-3">ACES CARE HUB JAPAN</h3>
             <div className="space-y-2 text-gray-400 text-sm">
               <p className="font-medium text-gray-300">Re-Verse Civilization</p>
               <p>優しさが制度になる文明へ。</p>
