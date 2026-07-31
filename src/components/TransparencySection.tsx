@@ -56,8 +56,9 @@ const TransparencySection = () => {
             </ul>
 
             {/* Card 1 ボタン: Security & Audit */}
-            <a 
-              href="/audit/SOLUNA_Security_Audit_202511.pdf"
+
+                        <a 
+              href="/soluna-security-audit-202511.pdf"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full flex items-center justify-center gap-3 py-4 rounded-xl border border-cyan-500/30 bg-cyan-950/30 text-cyan-300 font-medium hover:bg-cyan-900/40 hover:border-cyan-400/60 transition-all hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] cursor-pointer"
@@ -65,7 +66,10 @@ const TransparencySection = () => {
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
               内部セキュリティ検証レポート (PDF)
             </a>
+           
           </div>
+
+
 
           {/* Card 2: Transaction Report */}
           <div className="group relative bg-[#0A0A0A] border border-white/10 rounded-3xl p-10 md:p-12 overflow-hidden hover:border-blue-500/50 transition-all duration-500 hover:shadow-[0_0_50px_-20px_rgba(59,130,246,0.3)]">
