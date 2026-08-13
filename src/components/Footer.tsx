@@ -26,17 +26,30 @@ const Footer = () => {
           <div className="space-y-6">
             <h3 className="font-bold text-lg text-white">Discovery</h3>
             <ul className="space-y-4 text-gray-400 text-sm">
-              
-              {/* Re-Verse Code Diagnosis */}
+
+              {/* 心の重り偏差値マップ */}
               <li>
-                <a 
-                  href="https://tally.so/r/mK7Yez" 
-                  target="_blank" 
+                <a
+                  href="https://omori-hensachi.vercel.app"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
                 >
-                  <span className="text-cyan-400 group-hover:text-blue-400 transition-colors">✦</span> 
-                  Re-Verse Code Diagnosis 
+                  <span className="text-cyan-400 group-hover:text-blue-400 transition-colors">✦</span>
+                  心の重り偏差値マップ（無料診断）
+                </a>
+              </li>
+
+              {/* Re-Verse Code Diagnosis */}
+              <li>
+                <a
+                  href="https://tally.so/r/mK7Yez"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"
+                >
+                  <span className="text-cyan-400 group-hover:text-blue-400 transition-colors">✦</span>
+                  Re-Verse Code Diagnosis
                 </a>
               </li>
 

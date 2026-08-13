@@ -3,7 +3,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, HeartPulse } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 
@@ -55,6 +55,54 @@ export default function Home() {
       <HeroSection />
       <SocialProof />
       <ProblemSolution />
+
+      {/* ========================================
+          心の重り偏差値マップ 診断導線セクション
+          ======================================== */}
+      <section className="relative py-20 sm:py-28 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#050511] via-indigo-950/20 to-[#050511]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-purple-500/5 rounded-full blur-[120px]" />
+
+        <div className="relative z-10 max-w-3xl mx-auto px-4 sm:px-6 text-center">
+          <div className="inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-purple-500/10 border border-purple-500/20 backdrop-blur-sm mb-8">
+            <HeartPulse className="w-3.5 h-3.5 text-purple-300" />
+            <span className="text-purple-300/80 text-xs font-mono tracking-wider uppercase">
+              無料診断
+            </span>
+          </div>
+
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 leading-tight">
+            <span className="text-white">あなたが背負ってきた「重さ」を、</span>
+            <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-indigo-300">
+              数値で知る
+            </span>
+          </h2>
+
+          <p className="text-gray-400 text-base sm:text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+            人生で背負ってきた重さを、科学的エビデンスに基づいて数値化する<br className="hidden sm:block" />
+            「心の重り偏差値マップ」。まずは自分の状態を知ることから。
+          </p>
+
+          <a
+            href="https://omori-hensachi.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 rounded-full font-bold text-white text-lg transition-all duration-300 shadow-[0_0_40px_rgba(147,51,234,0.4)] hover:shadow-[0_0_60px_rgba(147,51,234,0.6)] hover:-translate-y-1 active:translate-y-0"
+          >
+            <span className="relative">
+              無料で診断してみる
+              <div className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white/50 group-hover:w-full transition-all duration-300" />
+            </span>
+            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          </a>
+
+          <p className="mt-8 text-xs text-gray-500 font-mono">
+            所要時間: 約3分 / 完全無料 / 登録不要
+          </p>
+        </div>
+      </section>
+
       <FearSection />
       <ProfileSummary />
       <BetaRecruitment />

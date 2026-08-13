@@ -32,29 +32,25 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-6">
-        <div className="p-4 rounded-full bg-white/5 border border-white/10 shadow-[0_0_30px_rgba(34,211,238,0.1)] group-hover:shadow-[0_0_50px_rgba(34,211,238,0.2)] transition-all duration-500">
-          <svg className="w-8 h-8 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-          </svg>
-        </div>
-        
-        <div className="space-y-3 max-w-lg">
-          <h3 className="text-2xl font-bold text-white tracking-wide">
-            Access Restricted
+        {/* 中身のティーザー：誓いの内容をぼかし表示でプレビュー */}
+        <div className="w-full max-w-lg select-none pointer-events-none">
+          <h3 className="text-2xl font-bold text-white/50 mb-4 blur-[2px]">
+            Re-Verse Civilization<br/><span className="text-slate-400 text-xl font-light">への誓い</span>
           </h3>
-          <p className="text-gray-400 leading-relaxed">
-            証拠を提出し、優しさを証明するには<br className="hidden md:block"/>
-            <span className="text-cyan-200">Re-Verse ID</span>（顔認証 / Passkeys）による接続が必要です。
+          <p className="text-gray-500/70 leading-relaxed blur-[2px]">
+            私は、ケア資本主義（Care Capitalism）の実装者として、優しさが循環する社会を創り上げることを宣言します。
           </p>
         </div>
 
-        <div className="mt-4 scale-110">
-          <ConnectButton label="IDを接続して解除" accountStatus="avatar" showBalance={false} />
+        <div className="space-y-3 max-w-lg">
+          <p className="text-gray-400 leading-relaxed">
+            誓いを刻み、優しさを証明するには接続が必要です。
+          </p>
         </div>
-        
-        <p className="text-xs text-gray-600 mt-6 tracking-wider font-mono">
-          SECURE CHANNEL REQUIRED
-        </p>
+
+        <div className="mt-2 scale-110">
+          <ConnectButton label="接続してはじめる" accountStatus="avatar" showBalance={false} />
+        </div>
       </div>
     </div>
   );
