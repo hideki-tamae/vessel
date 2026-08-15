@@ -83,7 +83,7 @@ const Footer = () => {
               {/* Public Dashboard */}
               <li>
                 <a 
-                  href="https://www.notion.so/Public-Dashboard-2ac6197f1e5580699329eca765fce2f2" 
+                  href="https://app.notion.com/p/Re-Verse-Civilization-Dashboard-v2-3ae6197f1e5580959474efe87894c07f"
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="hover:text-blue-400 transition-colors flex items-center gap-2 text-white/80 font-medium group"

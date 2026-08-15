@@ -23,8 +23,8 @@ const WhitepaperENPage = () => {
 
             <section className="relative overflow-hidden bg-white text-gray-800 p-8 md:p-16 shadow-2xl rounded-sm min-h-[1100px] border border-gray-300">
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.03] rotate-[-35deg] text-[120px] font-black whitespace-nowrap">Official Document</div>
-              <div className="absolute top-8 right-8 w-16 h-16 opacity-80">
-                <img src="/logo.png" alt="SOLUNA Logo" className="w-full h-auto grayscale" />
+              <div className="absolute top-8 right-8 w-20 h-20 md:w-24 md:h-24">
+                <img src="/aces-logo.png" alt="ACES CARE HUB JAPAN" className="w-full h-auto drop-shadow-sm" />
               </div>
               <div className="relative z-10 space-y-8">
                 <div className="border-b-2 border-gray-900 pb-4">

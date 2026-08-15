@@ -45,6 +45,7 @@ public/*.mp3
 public/*.pdf
 public/*.png
 public/*.jpg
+!public/aces-logo.png
 public/images/
 public/docs/
 public/teasers/
