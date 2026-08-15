@@ -1,6 +1,6 @@
-# HAIS Polyvagal Research Sandbox (`renear`)
+# HAIS Polyvagal Research Sandbox (`harness`)
 
-**HAIS Polyvagal Research Sandbox**（コードネーム: `renear`）は、多迷走神経理論（Polyvagal Theory）に基づき、自律神経状態の推移や心理的安全性をシミュレーション・分析するための研究開発用サンドボックスです。
+**HAIS Polyvagal Research Sandbox**（コードネーム: `harness`）は、多迷走神経理論（Polyvagal Theory）に基づき、自律神経状態の推移や心理的安全性をシミュレーション・分析するための研究開発用サンドボックスです。
 
 資本主義のバグを修正し、ケアを価値化する「Care Capitalism」の実現に向け、生体・行動データから「Proof of Care（ケアの証明）」を算出・検証するコアエンジンとして機能します。
 
@@ -87,8 +87,8 @@ python main.py
 
 2. Docker での実行
 
-docker build -t renear-sandbox .
-docker run -p 7860:7860 --env-file .env renear-sandbox
+docker build -t harness-sandbox .
+docker run -p 7860:7860 --env-file .env harness-sandbox
 
 🧪 テストの実行 (Testing)
 
