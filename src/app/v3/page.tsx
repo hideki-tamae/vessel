@@ -101,7 +101,7 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-12">
             <Link
-              href="/dashboard"
+              href="/hais-voice"
               className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-black text-[10px] sm:text-xs tracking-[0.3em] uppercase hover:shadow-[0_0_80px_rgba(16,185,129,0.6)] hover:scale-110 transition-all rounded-sm flex items-center justify-center gap-2 sm:gap-3 shadow-xl duration-300 group"
             >
               <Mic size={14} className="sm:w-[16px] group-hover:scale-125 transition-transform" />
@@ -124,7 +124,7 @@ export default function Home() {
 
           <div className="text-center">
             <p className="text-[8px] sm:text-[9px] text-white/30 tracking-[0.2em] uppercase mb-3 sm:mb-4">
-              支援機関: 東京都 / 厚労省関連団体
+            目標: 支援機関: 東京都 / 厚労省関連団体
             </p>
             <div className="flex justify-center gap-6 sm:gap-8 opacity-40 flex-wrap">
               <span className="text-[9px] sm:text-xs font-serif tracking-widest">Blockchain Verified</span>
@@ -403,7 +403,7 @@ export default function Home() {
                 <li className="flex gap-2"><CheckCircle2 size={14} className="text-white/30 flex-shrink-0 mt-0.5" /> <span>ストレス可視化</span></li>
                 <li className="flex gap-2"><CheckCircle2 size={14} className="text-white/30 flex-shrink-0 mt-0.5" /> <span>SOLUNAトークン</span></li>
               </ul>
-              <Link href="/dashboard" className="w-full py-3 sm:py-4 border border-white/30 text-white text-center text-[9px] sm:text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/10 transition-all">
+              <Link href="/hais-voice" className="w-full py-3 sm:py-4 border border-white/30 text-white text-center text-[9px] sm:text-[10px] font-black tracking-[0.2em] uppercase hover:bg-white/10 transition-all">
                 ダッシュボード
               </Link>
             </div>

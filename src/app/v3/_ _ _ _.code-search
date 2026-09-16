@@ -1,0 +1,9 @@
+# Query: 支援機関: 東京都 / 厚労省関連団体
+# ContextLines: 1
+
+1 result - 1 file
+
+src/app/v3/page.tsx:
+  126              <p className="text-[8px] sm:text-[9px] text-white/30 tracking-[0.2em] uppercase mb-3 sm:mb-4">
+  127:               目標: 支援機関: 東京都 / 厚労省関連団体
+  128              </p>
