@@ -13,7 +13,10 @@ import { useAccount } from 'wagmi';
 
 import { AuthGate } from '../../components/AuthGate';
 import ProofOfCommitment from '../../components/ProofOfCommitment';
-import ThemeSongPlayer from "@/components/ThemeSongPlayer";
+import dynamic from "next/dynamic";
+const ThemeSongPlayer = dynamic(() => import("@/components/ThemeSongPlayer"), {
+  ssr: false
+});
 
 export default function Home() {
   const { isConnected } = useAccount();
@@ -64,7 +67,7 @@ export default function Home() {
             loop
             muted
             playsInline
-            className="w-full h-full object-cover opacity-45 grayscale mix-blend-multiply"
+            className="w-full h-full object-cover opacity-45 grayscale"
           >
             <source src="/images/hero-movie-v3.mp4" type="video/mp4" />
           </video>
