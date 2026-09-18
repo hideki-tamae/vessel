@@ -20,6 +20,22 @@ interface AudioSample {
     }
     const noiseFloor = noiseEnergy / profileFrames;
     const vadThreshold = Math.max(0.005, noiseFloor * 2.5);
+
+    // 1b. 周波数領域のノイズプロファイル（スペクトラルサブトラクション用）
+    // 冒頭の数フレーム（発声前の環境音）を「その場の暗騒音の周波数特性」として記録し、
+    // 以降の全フレームからビンごとに差し引く。ブラウザのnoiseSuppression（機器全体向け）に加え、
+    // このスキャン固有の環境ノイズに適応する簡易ノイズキャンセリング。
+    const binCount = samples[0]?.freq.length ?? 0;
+    const noiseProfile = new Float32Array(binCount);
+    for (let i = 0; i < profileFrames; i++) {
+      const freq = samples[i].freq;
+      for (let b = 0; b < binCount; b++) {
+        noiseProfile[b] += (freq[b] / 255) ** 2;
+      }
+    }
+    if (profileFrames > 0) {
+      for (let b = 0; b < binCount; b++) noiseProfile[b] /= profileFrames;
+    }
   
     // 有効な音声フレーム（発声区間）のみを抽出
     const activeFrames = samples.filter(s => {
@@ -70,18 +86,41 @@ interface AudioSample {
     const shimmer = shimN > 0 ? (shimSum / shimN) * 100 : 0;
   
     // 5. HNR (調波対雑音比)
-    let hPow = 0, nPow = 0;
+    // 修正点：
+    //  a) ノイズ除去は周波数ビンごとのプロファイル（noiseProfile）を差し引くスペクトラルサブトラクションに変更
+    //     （旧実装は時間領域のnoiseFloorを周波数領域の値からそのまま引いており、単位が不一致だった）
+    //  b) 調波ビン数（約15本×5=75ビン程度）と非調波ビン数（残り約2000ビン）の数の差により、
+    //     単純合計の比だと非調波側が常に大きくなり、静かな環境でもHNRが不当に低く出ていた。
+    //     ビン数で正規化した「ビンあたりの平均パワー」の比に変更し、公平な比較にする。
     const freqBin = sampleRate / fftSize;
     const f0Bin = Math.round(f0 / freqBin);
-    
+
+    // 調波ビンの判定テーブルを一度だけ構築（毎フレーム・毎ビンでの配列再生成をやめ、処理も軽くする）
+    const isHarmonicBin = new Uint8Array(binCount);
+    let harmonicBinCount = 0;
+    for (let i = 0; i < binCount; i++) {
+      let harmonic = false;
+      for (let k = 1; k <= 15; k++) {
+        if (Math.abs(i - f0Bin * k) <= 2) { harmonic = true; break; }
+      }
+      if (harmonic) { isHarmonicBin[i] = 1; harmonicBinCount++; }
+    }
+    const noiseBinCount = Math.max(0, binCount - harmonicBinCount);
+
+    let hPow = 0, nPow = 0;
     targetFrames.forEach(s => {
       for (let i = 0; i < s.freq.length; i++) {
-        const v = Math.max(0, (s.freq[i] / 255) ** 2 - noiseFloor);
-        const isHarmonic = Array.from({ length: 15 }, (_, k) => k + 1).some(k => Math.abs(i - f0Bin * k) <= 2);
-        isHarmonic ? (hPow += v) : (nPow += v);
+        const v = Math.max(0, (s.freq[i] / 255) ** 2 - noiseProfile[i]);
+        isHarmonicBin[i] ? (hPow += v) : (nPow += v);
       }
     });
-    const hnr = nPow > 0 ? Math.min(10 * Math.log10(hPow / nPow), 40) : 40;
+
+    const avgHPow = harmonicBinCount > 0 ? hPow / harmonicBinCount : 0;
+    const avgNPow = noiseBinCount > 0 ? nPow / noiseBinCount : 0;
+    const EPS = 1e-6; // ゼロ除算・log(0)対策の微小値
+    const hnr = avgHPow > 0
+      ? Math.min(10 * Math.log10((avgHPow + EPS) / (avgNPow + EPS)), 40)
+      : 40; // 有効な調波成分が全く検出できない＝無音に近いとみなし、ノイズ側のペナルティにはしない
   
     // 6. ポリヴェーガル理論に基づく状態変数 ω (Neural State)
     let stateKey: 'ventral' | 'dorsal' | 'sympathetic' | 'mixed';
