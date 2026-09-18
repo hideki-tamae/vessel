@@ -70,6 +70,13 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
   const [insightUnavailable, setInsightUnavailable] = useState(false);
   const [isSampleResult, setIsSampleResult] = useState(false);
 
+  // 本人によるデータ確認・削除（マイデータ）
+  const [myDataOpen, setMyDataOpen] = useState(false);
+  const [myDataLoading, setMyDataLoading] = useState(false);
+  const [myDataResult, setMyDataResult] = useState<any>(null);
+  const [myDataError, setMyDataError] = useState<string | null>(null);
+  const [myDataDeleted, setMyDataDeleted] = useState(false);
+
   // 🆕 累計残高を再取得する関数（Torvalds的堅牢性：useCallbackでメモ化）
   const refreshEquity = useCallback(async (userId: string) => {
     if (!userId) return;
@@ -175,6 +182,57 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
   // スキャン失敗時（マイクなし等）の代替導線。検証用のサンプル値で結果表示のみ体験できるようにする。
   const handleUseSampleResult = () => {
     handleComplete({ f0: 178.4, jitter: 0.62, shimmer: 3.1, hnr: 14.2 }, true);
+  };
+
+  // マイデータ：本人が自分の記録を確認する（/api/hais/user-data, GET）
+  const handleViewMyData = async () => {
+    if (!address) {
+      setMyDataError('データを確認するにはウォレットの接続が必要です。');
+      return;
+    }
+    setMyDataLoading(true);
+    setMyDataError(null);
+    try {
+      const res = await fetch(`/api/hais/user-data?walletAddress=${encodeURIComponent(address)}`);
+      const data = await res.json();
+      if (data.success) {
+        setMyDataResult(data.user);
+      } else {
+        setMyDataResult(null);
+        setMyDataError(data.error === 'User not found' ? 'まだ記録がありません。' : (data.error || '取得に失敗しました。'));
+      }
+    } catch (e) {
+      setMyDataError('取得に失敗しました。しばらくしてからもう一度お試しください。');
+    } finally {
+      setMyDataLoading(false);
+    }
+  };
+
+  // マイデータ：本人が自分の記録を削除する（/api/hais/user-data, DELETE）。取り消せないため確認を挟む。
+  const handleDeleteMyData = async () => {
+    if (!address) {
+      setMyDataError('削除するにはウォレットの接続が必要です。');
+      return;
+    }
+    const confirmed = window.confirm('これまでの記録をすべて削除します。この操作は取り消せません。続けますか？');
+    if (!confirmed) return;
+
+    setMyDataLoading(true);
+    setMyDataError(null);
+    try {
+      const res = await fetch(`/api/hais/user-data?walletAddress=${encodeURIComponent(address)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setMyDataResult(null);
+        setMyDataDeleted(true);
+      } else {
+        setMyDataError(data.error === 'User not found' ? '削除する記録がありません。' : (data.error || '削除に失敗しました。'));
+      }
+    } catch (e) {
+      setMyDataError('削除に失敗しました。しばらくしてからもう一度お試しください。');
+    } finally {
+      setMyDataLoading(false);
+    }
   };
 
   const handleMint = async () => {
@@ -301,6 +359,42 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
           </div>
         </div>
       )}
+
+      {/* マイデータ：本人が自分の記録を確認・削除できる導線（常時表示） */}
+      <div style={styles.myDataCard}>
+        <button onClick={() => setMyDataOpen(v => !v)} style={styles.myDataToggle}>
+          マイデータ（自分の記録の確認・削除） {myDataOpen ? '▲' : '▼'}
+        </button>
+
+        {myDataOpen && (
+          <div style={styles.myDataBody}>
+            {myDataDeleted ? (
+              <div style={styles.myDataDeletedMsg}>記録を削除しました。</div>
+            ) : (
+              <>
+                <div style={styles.myDataActions}>
+                  <button onClick={handleViewMyData} disabled={myDataLoading} style={styles.myDataBtn}>
+                    {myDataLoading ? '読み込み中...' : '自分のデータを確認する'}
+                  </button>
+                  <button onClick={handleDeleteMyData} disabled={myDataLoading} style={styles.myDataDeleteBtn}>
+                    自分のデータを削除する
+                  </button>
+                </div>
+
+                {myDataError && <div style={styles.myDataErrorMsg}>{myDataError}</div>}
+
+                {myDataResult && (
+                  <div style={styles.myDataSummary}>
+                    <div>記録件数: {myDataResult.scans?.length ?? 0}件</div>
+                    <div>ケア実行履歴: {myDataResult.careActions?.length ?? 0}件</div>
+                    <div>Claim履歴: {myDataResult.claims?.length ?? 0}件</div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -356,4 +450,15 @@ const styles: Record<string, any> = {
 
   sampleBadge: { fontSize: '11px', color: '#e8b86d', background: 'rgba(232,184,109,0.08)', border: '1px solid rgba(232,184,109,0.2)', borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', lineHeight: 1.5 },
   insightUnavailableCard: { fontSize: '12px', color: '#8b91a8', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px 16px', margin: '20px 0', lineHeight: 1.6 },
+
+  // マイデータ（本人によるデータ確認・削除）
+  myDataCard: { marginTop: '24px', marginBottom: '40px', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', overflow: 'hidden' },
+  myDataToggle: { width: '100%', padding: '14px 16px', background: '#111520', border: 'none', color: '#8b91a8', fontSize: '11px', fontFamily: "'DM Mono', monospace", letterSpacing: '0.05em', textAlign: 'left', cursor: 'pointer' },
+  myDataBody: { padding: '16px', background: '#0d1117', borderTop: '1px solid rgba(255,255,255,0.07)' },
+  myDataActions: { display: 'flex', gap: '10px', flexWrap: 'wrap' as const },
+  myDataBtn: { flex: '1 1 auto', padding: '10px 14px', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#8b91a8', fontSize: '11px', cursor: 'pointer' },
+  myDataDeleteBtn: { flex: '1 1 auto', padding: '10px 14px', background: 'transparent', border: '1px solid rgba(232,109,109,0.4)', borderRadius: '10px', color: '#e8b0b0', fontSize: '11px', cursor: 'pointer' },
+  myDataErrorMsg: { marginTop: '12px', fontSize: '11px', color: '#e8b0b0' },
+  myDataSummary: { marginTop: '12px', fontSize: '11px', color: '#8b91a8', lineHeight: 1.8, fontFamily: "'DM Mono', monospace" },
+  myDataDeletedMsg: { fontSize: '12px', color: '#5ec984' },
 };
