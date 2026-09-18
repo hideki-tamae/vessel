@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import VoiceScanner from '@/components/VoiceScanner';
 import SyncProposal from '@/components/SyncProposal';
+import SupportHistoryPanel from '@/components/SupportHistoryPanel';
+import TrendPanel from '@/components/TrendPanel';
 import { useSyncProposal } from '@/hooks/useSyncProposal';
 
 /**
@@ -19,6 +21,9 @@ export default function HaisVoicePage() {
 
   const [phase, setPhase] = useState<'idle' | 'minting' | 'crystallized'>('idle');
   const [mounted, setMounted] = useState(false);
+  // 4層データモデル（本人/支援/業務環境/検証）のうち、本人が見る3画面：
+  // 今日の記録／支援の履歴／90日間の変化。年内MVPの範囲では、これで十分とする。
+  const [activeTab, setActiveTab] = useState<'today' | 'support' | 'trend'>('today');
 
   useEffect(() => {
     setMounted(true);
@@ -78,7 +83,7 @@ export default function HaisVoicePage() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(64,150,255,0.05)_0%,transparent_70%)] pointer-events-none" />
 
       {/* ヘッダー: フェーズに関わらずOSのコンテキストを維持（結晶化時は非表示にしても良い） */}
-      <motion.div 
+      <motion.div
         animate={{ opacity: phase === 'crystallized' ? 0 : 1 }}
         className="absolute top-12 text-center z-10"
       >
@@ -87,6 +92,35 @@ export default function HaisVoicePage() {
         <p className="text-xs text-[#555c74] tracking-wider">ポリヴェーガル理論に基づく生体解析</p>
       </motion.div>
 
+      {/* タブ切り替え：今日の記録／支援の履歴／90日間の変化（idle時のみ、演出の邪魔をしない） */}
+      {phase === 'idle' && (
+        <div className="z-10 mt-40 mb-2 flex gap-2 rounded-full border border-white/10 bg-[#111520] p-1">
+          {([
+            { key: 'today', label: '今日の記録' },
+            { key: 'support', label: '支援の履歴' },
+            { key: 'trend', label: '90日間の変化' },
+          ] as const).map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-4 py-1.5 rounded-full text-[11px] tracking-wide transition-colors ${
+                activeTab === tab.key ? 'bg-white text-[#0a0c12]' : 'text-[#8a94ad] hover:text-white'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {phase === 'idle' && activeTab !== 'today' && (
+        <div className="z-10 w-full max-w-lg mt-4">
+          {activeTab === 'support' && <SupportHistoryPanel walletAddress={address} />}
+          {activeTab === 'trend' && <TrendPanel walletAddress={address} />}
+        </div>
+      )}
+
+      {(phase !== 'idle' || activeTab === 'today') && (
       <AnimatePresence mode="wait">
         
         {/* フェーズ 0: スキャンと救済の提示 */}
@@ -186,6 +220,7 @@ export default function HaisVoicePage() {
           </motion.div>
         )}
       </AnimatePresence>
+      )}
 
       <footer className="absolute bottom-6 z-10 pointer-events-none">
         <p className="text-[9px] text-[#333b4d] font-mono tracking-widest uppercase">© 2026 Limelien Inc. | Care Capitalism Protocol</p>
