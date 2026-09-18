@@ -8,6 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 import HeroSection from '../components/HeroSection';
+import EntryPointSelector from '../components/EntryPointSelector';
 import SocialProof from '../components/SocialProof';
 import ProblemSolution from '../components/ProblemSolution';
 import FearSection from '../components/FearSection';
@@ -53,6 +54,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#050511] text-white selection:bg-purple-500 selection:text-white overflow-hidden">
       <HeroSection />
+      <EntryPointSelector />
       <SocialProof />
       <ProblemSolution />
 
