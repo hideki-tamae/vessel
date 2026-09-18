@@ -78,6 +78,20 @@ const DEPARTMENTS = [
   { name: '人事・総務', nameEn: 'HR', score: 72, risk: 'Safe', debt: 1500000, members: 8 },
 ];
 
+// スコアカード・未認識債務カードに表示する付帯情報（サンプル）。
+// 「単一の数字で断定しない」ため、期間・参加率・算定根拠を必ずセットで持たせる。
+const REPORTING_PERIOD = '2026/09/01 - 09/14';
+const PREVIOUS_AVG_SCORE = 61; // 前回計測時の組織健全性スコア（サンプル）
+const RESPONDENT_COUNT = 36; // 期間内に記録・回答した人数（サンプル）
+const DEBT_BASIS = {
+  calcPeriod: '直近30日間の記録をもとに算出',
+  costItems: ['採用コスト（求人広告・エージェント手数料）', '教育・引き継ぎコスト', '欠員期間の機会損失'],
+  assumption: '「支援を検討したいケース」3件が今後30日以内に離職した場合を仮定',
+  rangeMin: 18000000,
+  rangeMax: 32000000,
+  missingData: '実際の採用単価・研修コストは未入力のため、業界平均値を使用しています。',
+};
+
 // 注: 以下はUI検証用のサンプルです。診断名・心理状態の断定表現を避け、
 // 「本人が記録・共有した状態」として読める表現に統一する。
 const RISKY_EMPLOYEES = [
@@ -540,6 +554,7 @@ export default function DashboardPage() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [showActionConfirm, setShowActionConfirm] = useState(false);
   const [actionType, setActionType] = useState('');
+  const [showDebtBasis, setShowDebtBasis] = useState(false);
 
   const handleIntervention = (employee: Employee) => {
     setSelectedEmployee(employee);
@@ -565,6 +580,8 @@ export default function DashboardPage() {
 
   const totalDebt = DEPARTMENTS.reduce((sum, d) => sum + d.debt, 0);
   const avgScore = Math.round(DEPARTMENTS.reduce((sum, d) => sum + d.score, 0) / DEPARTMENTS.length);
+  const totalMembers = DEPARTMENTS.reduce((sum, d) => sum + d.members, 0);
+  const scoreDelta = avgScore - PREVIOUS_AVG_SCORE;
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-emerald-500/30">
@@ -653,11 +670,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-rose-500 via-yellow-500 to-emerald-500 transition-all duration-1000"
                     style={{ width: `${avgScore}%` }}
                   />
                 </div>
+                <div className="mt-4 pt-3 border-t border-slate-800 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-slate-500 font-mono">
+                  <span>対象期間: {REPORTING_PERIOD}</span>
+                  <span className={scoreDelta >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                    前回比: {scoreDelta >= 0 ? '+' : ''}{scoreDelta}
+                  </span>
+                  <span>記録参加者: {RESPONDENT_COUNT}名 / {totalMembers}名</span>
+                </div>
+                <p className="mt-2 text-[10px] text-slate-600 leading-relaxed">
+                  これは診断・人事評価ではありません。本人が同意の範囲で記録・共有した情報の集計です。
+                </p>
               </motion.div>
 
               {/* Hidden Debt */}
@@ -672,10 +699,34 @@ export default function DashboardPage() {
                 <div className="text-4xl md:text-5xl font-mono text-white tracking-tighter">
                   ¥<AnimatedCounter value={totalDebt} />
                 </div>
+                <p className="text-[11px] text-slate-500 mt-1 font-mono">
+                  推定レンジ: ¥{DEBT_BASIS.rangeMin.toLocaleString()} 〜 ¥{DEBT_BASIS.rangeMax.toLocaleString()}
+                </p>
                 <p className="mt-3 text-xs text-slate-400 leading-relaxed">
                   高リスク従業員3名が30日以内に離職した場合の<br />
                   推定損失額（採用・教育・機会損失含む）
                 </p>
+
+                <button
+                  onClick={() => setShowDebtBasis(v => !v)}
+                  className="mt-3 text-[11px] text-rose-300/80 hover:text-rose-300 underline underline-offset-2"
+                >
+                  {showDebtBasis ? '算定根拠を閉じる' : '算定根拠を見る'}
+                </button>
+
+                {showDebtBasis && (
+                  <div className="mt-3 pt-3 border-t border-rose-900/30 text-[11px] text-slate-400 leading-relaxed space-y-2">
+                    <div><span className="text-slate-500">算定期間: </span>{DEBT_BASIS.calcPeriod}</div>
+                    <div>
+                      <span className="text-slate-500">含めたコスト項目: </span>
+                      <ul className="list-disc list-inside ml-2">
+                        {DEBT_BASIS.costItems.map((item) => <li key={item}>{item}</li>)}
+                      </ul>
+                    </div>
+                    <div><span className="text-slate-500">仮定: </span>{DEBT_BASIS.assumption}</div>
+                    <div className="text-amber-300/80"><span className="text-slate-500">不足データ: </span>{DEBT_BASIS.missingData}</div>
+                  </div>
+                )}
               </motion.div>
 
               {/* Live Vital */}

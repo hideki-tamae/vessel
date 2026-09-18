@@ -219,16 +219,16 @@ export default function InsuranceHero() {
               whileHover={{ scale: 1.02 }}
             >
               <Activity className="w-5 h-5" />
-              <span>無料診断 (PoC) を開始</span>
+              <span>30分の無料相談を予約する</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </motion.a>
-            
-            <button 
+
+            <button
               onClick={() => setIsDemoOpen(true)}
               className="px-8 py-4 border border-white/20 text-slate-300 hover:text-white font-medium rounded-lg transition-all"
             >
               <ShieldCheck className="w-5 h-5 inline mr-2" />
-              <span>30秒デモを見る</span>
+              <span>30秒デモを試す</span>
             </button>
           </div>
         </motion.div>
