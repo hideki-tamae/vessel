@@ -12,11 +12,16 @@ const SOLUNA_ABI = [
   "function cap() view returns (uint256)"
 ];
 
+// 将来の拡張ポイント（現在は未実装）：
+// 本人であることを明かさずに「リスクがないこと」等を証明するZero-Knowledge Proofを
+// 導入する場合、mintProofOfCareの引数に zkProof?: string（回路の出力）を追加し、
+// コントラクト側の検証関数と合わせて実装する。本格的なZK回路設計は独立した
+// 暗号工学タスクであり、法人再編・SOLUNA認証P0ブロッカー解消後に着手する。
 export const useCareBridge = () => {
   const [isMinting, setIsMinting] = useState(false);
   const { address } = useAccount();
 
-  const mintProofOfCare = async (omegaScore: number): Promise<boolean> => {
+  const mintProofOfCare = async (omegaScore: number /*, zkProof?: string 将来追加 */): Promise<boolean> => {
     if (!(window as any).ethereum || !address) {
       alert("ウォレットを接続してください");
       return false;

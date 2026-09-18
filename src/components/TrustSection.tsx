@@ -59,20 +59,20 @@ const IconCompliance = () => (
 const trustPoints = [
   {
     icon: <IconEdge />,
-    title: "Edge Computing Architecture",
-    desc: "生体データはクラウドに送信されません。全ての解析はお客様のデバイス（ブラウザ）内で完結し、結果（スコア）のみが記録されます。",
+    title: "ブラウザ内での特徴量抽出",
+    desc: "音声の生データ（録音そのもの）はサーバーに送信されません。周波数のゆらぎ等の数値（特徴量）をブラウザ内で抽出し、その数値のみを解析用に送信します。",
     color: "blue"
   },
   {
     icon: <IconZeroKnowledge />,
-    title: "Zero-Knowledge Proof",
-    desc: "「誰であるか」を知らずに「リスクがないこと」を証明するゼロ知識証明技術を採用。個人の特定は不可能です。",
+    title: "個人特定情報の最小化（検討中）",
+    desc: "本人が同意した範囲を超えて個人を特定しない設計を検討しています。ゼロ知識証明などの高度な保護技術は、現時点では未実装のロードマップ項目です。",
     color: "purple"
   },
   {
     icon: <IconCompliance />,
-    title: "GDPR / APPI Compliant",
-    desc: "欧州GDPRおよび日本の個人情報保護法に準拠。生体認証データ（Raw Data）の破棄をコードレベルで保証しています。",
+    title: "プライバシー配慮の設計方針",
+    desc: "GDPR・個人情報保護法（APPI）の考え方を参考に設計していますが、法的な認証・監査は現時点で完了していません。導入前に専門家・貴社法務とご確認ください。",
     color: "emerald"
   }
 ];

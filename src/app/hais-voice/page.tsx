@@ -25,10 +25,17 @@ export default function HaisVoicePage() {
   }, []);
 
   const handleScanComplete = async (payload: any) => {
+    // VoiceScanner側で本体の記録処理（fetchVoiceInsight）は完結済み。
+    // ここは付随ログ用の送信のため、バックエンドURLが正しく設定されている時だけ試行する。
+    // 本番のlocalhost:8000誤送信（=常時失敗）を避け、無駄な失敗ログを出さない。
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      console.log("Civilization OS backend not configured; skipping supplemental log.", payload);
+      return;
+    }
     try {
-      console.log("Routing to Civilization OS (Backend):", payload);
-      // バックエンドの /analyze エンドポイントを叩き、Notion等へ魂を刻む（The Re-Verse Factor）
-      const response = await fetch('http://localhost:8000/analyze', {
+      const base = backendUrl.startsWith('http') ? backendUrl : `https://${backendUrl}`;
+      const response = await fetch(`${base}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -36,7 +43,7 @@ export default function HaisVoicePage() {
       const data = await response.json();
       console.log("Civilization OS Analysis Result:", data);
     } catch (error) {
-      console.error("Backend routing failed:", error);
+      console.error("Backend routing failed (non-blocking):", error);
     }
   };
 

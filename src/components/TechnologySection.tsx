@@ -88,25 +88,28 @@ const IconMicroExpression = () => (
 // --- Data ---
 const features = [
   {
-    icon: <IconRPPG />,
-    title: "rPPG (リモート脈波計測)",
-    description: "顔の皮膚の微細な色の変化から、心拍数や自律神経の状態を非接触で測定。映像解析ではなく、生体信号を捉えます。",
-    color: "blue",
-    delay: 0.1
-  },
-  {
     icon: <IconVocal />,
     title: "Vocal Biomarker (声のバイオマーカー)",
-    description: "声帯の緊張度から脳のストレス状態を解析。言葉の内容ではなく、周波数やリズムのズレを検知します。",
+    description: "声の韻律・発話特徴（周波数やリズムのゆらぎ）を分析。言葉の内容ではなく、非言語的な音響特徴を扱います。現在実装済みの中核機能です。",
     color: "purple",
-    delay: 0.2
+    delay: 0.1,
+    status: "実装済み",
+  },
+  {
+    icon: <IconRPPG />,
+    title: "rPPG (リモート脈波計測)",
+    description: "顔の皮膚の微細な色の変化から心拍を非接触で測定する構想。顔画像の解析はプライバシー・バイアスリスクが高いため、現時点では未実装・検討中です。",
+    color: "blue",
+    delay: 0.2,
+    status: "構想段階（未実装）",
   },
   {
     icon: <IconMicroExpression />,
     title: "Micro-Expression (微表情解析)",
-    description: "人間が隠しきれない0.2秒の「微表情」をAIが検知。「大丈夫です」という言葉の裏にある、抑圧された感情を読み解きます。",
+    description: "表情から感情を推定する構想。判定の誤りが人事・雇用の場で不利益に繋がりうるため、あえて実装を見送っています。",
     color: "emerald",
-    delay: 0.3
+    delay: 0.3,
+    status: "構想段階（未実装）",
   }
 ];
 
@@ -162,8 +165,8 @@ export default function TechnologySection() {
             </span>
           </h2>
           <p className="text-lg text-slate-400 leading-relaxed">
-            HAISは、カメラとマイクを「医療レベルのセンサー」へと変えます。<br/>
-            3つのバイオマーカー解析が、その根拠です。
+            ポリヴェーガル理論に着想を得た、声の韻律・発話特徴と本人の主観記録を<br/>
+            組み合わせたセルフモニタリング。医療診断ではなく、気づきと支援を補助します。
           </p>
         </motion.div>
 
@@ -194,7 +197,12 @@ export default function TechnologySection() {
                      </div>
                   </div>
                   
-                  <h3 className="text-xl font-bold text-white mb-4 tracking-wide">{feature.title}</h3>
+                  <div className="flex items-center gap-2 mb-4">
+                    <h3 className="text-xl font-bold text-white tracking-wide">{feature.title}</h3>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${feature.status === '実装済み' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-500/20 text-slate-400'}`}>
+                      {feature.status}
+                    </span>
+                  </div>
                   <p className="text-slate-400 leading-relaxed">{feature.description}</p>
                 </div>
 

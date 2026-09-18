@@ -78,10 +78,12 @@ const DEPARTMENTS = [
   { name: '人事・総務', nameEn: 'HR', score: 72, risk: 'Safe', debt: 1500000, members: 8 },
 ];
 
+// 注: 以下はUI検証用のサンプルです。診断名・心理状態の断定表現を避け、
+// 「本人が記録・共有した状態」として読める表現に統一する。
 const RISKY_EMPLOYEES = [
-  { id: 'EMP-8823', dept: 'エンジニアリング', risk: 92, reason: '音声バイオマーカー異常（抑うつ傾向）', status: '緊急', joinDate: '2022-04-01', role: 'シニアエンジニア' },
+  { id: 'EMP-8823', dept: 'エンジニアリング', risk: 92, reason: '本人記録：継続的な体調の落ち込みを報告', status: '緊急', joinDate: '2022-04-01', role: 'シニアエンジニア' },
   { id: 'EMP-9102', dept: 'エンジニアリング', risk: 85, reason: '過重労働（残業120h超）', status: '高', joinDate: '2021-09-15', role: 'テックリード' },
-  { id: 'EMP-7741', dept: 'カスタマーサクセス', risk: 78, reason: '微表情解析（抑圧された怒り）', status: '高', joinDate: '2023-01-10', role: 'CSマネージャー' },
+  { id: 'EMP-7741', dept: 'カスタマーサクセス', risk: 78, reason: '本人記録：ストレス負荷の高まりを報告', status: '高', joinDate: '2023-01-10', role: 'CSマネージャー' },
 ];
 
 // --- Types ---
@@ -95,9 +97,9 @@ const RiskBadge = ({ risk }: { risk: string }) => {
     Safe: 'bg-emerald-500 text-emerald-950',
   };
   const labels = {
-    Critical: '危険',
-    Caution: '注意',
-    Safe: '良好',
+    Critical: '要確認',
+    Caution: '観察継続',
+    Safe: '支援資源が機能',
   };
   return (
     <span className={`text-[10px] px-2 py-0.5 rounded font-bold ${styles[risk as keyof typeof styles]}`}>
@@ -170,7 +172,7 @@ const InterventionModal = ({
         <div className="p-6 border-b border-slate-800">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-xl font-semibold text-white">介入アクションを選択</h2>
+              <h2 className="text-xl font-semibold text-white">支援オプションを選択</h2>
               <p className="text-sm text-slate-400 mt-1">従業員ID: {employee.id}</p>
             </div>
             <button 
@@ -193,17 +195,22 @@ const InterventionModal = ({
                 <div className="text-white font-medium">{employee.role}</div>
               </div>
               <div>
-                <div className="text-sm text-slate-400">離職確率</div>
+                <div className="text-sm text-slate-400">支援優先度の目安</div>
                 <div className="text-rose-400 font-mono font-bold text-xl">{employee.risk}%</div>
               </div>
             </div>
             <div className="mt-3 pt-3 border-t border-slate-700">
-              <div className="text-sm text-slate-400">検出理由</div>
+              <div className="text-sm text-slate-400">本人記録の要約</div>
               <div className="text-rose-300 text-sm mt-1 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
                 {employee.reason}
               </div>
             </div>
+          </div>
+
+          {/* 支援操作前の同意・範囲確認（本人への評価ではないことを明示） */}
+          <div className="mt-4 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200 leading-relaxed">
+            この操作は本人への評価ではありません。実行前に、本人の同意範囲と支援方針をご確認ください。
           </div>
         </div>
 
@@ -615,7 +622,12 @@ export default function DashboardPage() {
         {/* Dashboard Grid */}
         <main className="flex-1 p-6 overflow-y-auto">
           <div className="max-w-7xl mx-auto space-y-6">
-            
+
+            {/* サンプルデータ明示バナー：診断・人事評価・採用判断への誤用を防ぐ */}
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-5 py-3 text-xs text-amber-200 leading-relaxed">
+              この画面の従業員・部署・金額はすべて<strong className="font-bold">検証用のサンプルデータ</strong>です。診断、人事評価、採用判断には使用しません。個人を特定した監視ではなく、支援の優先順位を検討するための画面です。
+            </div>
+
             {/* Top KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
               
@@ -637,7 +649,7 @@ export default function DashboardPage() {
                     avgScore >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
                     'bg-rose-500/20 text-rose-400'
                   }`}>
-                    {avgScore >= 70 ? '良好' : avgScore >= 50 ? '要注意' : '危険'}
+                    {avgScore >= 70 ? '支援資源が機能' : avgScore >= 50 ? '観察継続' : '要確認'}
                   </div>
                 </div>
                 <div className="mt-4 h-2 w-full bg-slate-800 rounded-full overflow-hidden">
@@ -695,9 +707,9 @@ export default function DashboardPage() {
                     <Building2 className="w-4 h-4" /> 部署別ヒートマップ
                   </h3>
                   <div className="flex items-center gap-2 text-[10px] text-slate-500">
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>良好</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"></span>注意</span>
-                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span>危険</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>支援資源が機能</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"></span>観察継続</span>
+                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500"></span>要確認</span>
                   </div>
                 </div>
                 
@@ -758,14 +770,17 @@ export default function DashboardPage() {
                 initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}
                 className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur-sm flex flex-col"
               >
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center justify-between mb-2">
                   <h3 className="text-rose-400 text-sm uppercase tracking-widest flex items-center gap-2">
-                    <UserX className="w-4 h-4" /> 高リスク従業員
+                    <UserX className="w-4 h-4" /> 支援を検討したいケース
                   </h3>
-                  <span className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-full animate-pulse font-bold">
-                    {RISKY_EMPLOYEES.length}件のアラート
+                  <span className="bg-rose-500/20 text-rose-400 text-xs px-3 py-1 rounded-full font-bold">
+                    {RISKY_EMPLOYEES.length}件
                   </span>
                 </div>
+                <p className="text-[11px] text-slate-500 mb-4 leading-relaxed">
+                  評価ではありません。本人同意の範囲内で共有された記録をもとに、支援の優先順位を検討するための一覧です。
+                </p>
 
                 <div className="flex-1 space-y-4 overflow-y-auto pr-2">
                   {RISKY_EMPLOYEES.map((emp, i) => (
@@ -788,7 +803,7 @@ export default function DashboardPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-2xl font-mono text-rose-400 font-bold">{emp.risk}%</div>
-                          <div className="text-[10px] text-slate-500">離職確率</div>
+                          <div className="text-[10px] text-slate-500">支援優先度の目安</div>
                         </div>
                       </div>
                       <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between gap-4">
@@ -796,11 +811,11 @@ export default function DashboardPage() {
                           <AlertTriangle className="w-3 h-3 flex-shrink-0" />
                           <span className="line-clamp-1">{emp.reason}</span>
                         </div>
-                        <button 
+                        <button
                           onClick={() => handleIntervention(emp)}
                           className="text-xs bg-slate-800 hover:bg-rose-500 text-white px-4 py-2 rounded-lg transition-all flex items-center gap-1 whitespace-nowrap group-hover:bg-rose-500"
                         >
-                          介入する <ChevronRight className="w-3 h-3" />
+                          支援オプションを見る <ChevronRight className="w-3 h-3" />
                         </button>
                       </div>
                     </motion.div>

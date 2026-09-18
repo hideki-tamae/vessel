@@ -7,6 +7,7 @@ export const useAudioAnalysis = () => {
   const [countdown, setCountdown] = useState(10);
   const [status, setStatus] = useState('スタンバイ完了');
   const [results, setResults] = useState<any>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -29,6 +30,7 @@ export const useAudioAnalysis = () => {
     }
 
     try {
+      setScanError(null);
       setScanning(true);
       const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
       audioCtxRef.current = audioCtx;
@@ -85,9 +87,30 @@ export const useAudioAnalysis = () => {
       }, 50);
     } catch(e: any) {
       setScanning(false);
-      setStatus(e.name === 'NotAllowedError' ? 'マイクのアクセスを許可してください' : `エラー: ${e.name}`);
+      const message = classifyScanError(e);
+      setStatus(message);
+      setScanError(message);
     }
   };
 
-  return { scanning, progress, countdown, status, results, startScan, analyserRef };
+  return { scanning, progress, countdown, status, results, scanError, startScan, analyserRef };
 };
+
+// マイク・音声取得時のエラーを、原因と次の行動がわかる日本語メッセージに変換する。
+// ブラウザの生のエラー名（NotFoundError等）をそのままユーザーに見せない。
+function classifyScanError(e: any): string {
+  switch (e?.name) {
+    case 'NotAllowedError':
+      return 'マイクのアクセスが許可されていません。ブラウザの設定でマイクを許可してから、もう一度お試しください。';
+    case 'NotFoundError':
+      return 'マイクが見つかりませんでした。マイクを接続するか、マイク付きの端末でお試しください。';
+    case 'NotReadableError':
+      return 'マイクを他のアプリが使用中の可能性があります。他のアプリを閉じてから、もう一度お試しください。';
+    case 'OverconstrainedError':
+      return 'この端末のマイクは現在の設定に対応していません。別の端末でお試しください。';
+    case 'SecurityError':
+      return '安全な接続（HTTPS）でのみマイクを利用できます。URLをご確認ください。';
+    default:
+      return `音声を取得できませんでした（${e?.name || '不明なエラー'}）。もう一度お試しいただくか、時間をおいて再度アクセスしてください。`;
+  }
+}

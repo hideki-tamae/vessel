@@ -7,7 +7,10 @@ import { analyzePolyvagalState } from '@/utils/polyvagalScoring';
 import AudioAnalyzer from '@/components/AudioAnalyzer';
 
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbx8yj8xo1ZHEtym5wcHf9FgEc3VYjo1bmN5vqFxdln8OdX2YNPuzoYrLBGualBWD9SXmQ/exec';
-const HAIS_API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+// NEXT_PUBLIC_BACKEND_URLがプロトコル無し（例: "xxx.up.railway.app"）で設定されている場合、
+// fetchが相対パスとして誤解釈し常に失敗するため、https://を補う。
+const rawBackendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+const HAIS_API_BASE = rawBackendUrl.startsWith('http') ? rawBackendUrl : `https://${rawBackendUrl}`;
 
 const STATES: Record<string, any> = {
   VENTRAL: {
@@ -61,9 +64,11 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
   // 🆕 累計資産の状態管理
   const [totalEquity, setTotalEquity] = useState<number>(0);
 
-  const { scanning, progress, countdown, status, results, startScan, analyserRef } = useAudioAnalysis();
+  const { scanning, progress, countdown, status, results, scanError, startScan, analyserRef } = useAudioAnalysis();
   const { mintProofOfCare, isMinting, address } = useCareBridge();
   const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [insightUnavailable, setInsightUnavailable] = useState(false);
+  const [isSampleResult, setIsSampleResult] = useState(false);
 
   // 🆕 累計残高を再取得する関数（Torvalds的堅牢性：useCallbackでメモ化）
   const refreshEquity = useCallback(async (userId: string) => {
@@ -86,6 +91,12 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
     refreshEquity(userId);
   }, [refreshEquity]);
 
+  // 将来の拡張ポイント（現在は未使用・未実装）：
+  // rPPG（映像からの心拍計測）・Micro-Expression（表情解析）を将来追加する場合は、
+  // ここに videoBiomarkers?: { rppgBpm?: number; microExpressionTags?: string[] } を
+  // 任意フィールドとして追加し、本人の明示的なカメラ利用同意を得たときだけ埋める設計にする。
+  // 顔分析は同意の形骸化・バイアスのリスクが高いため、実装時は同意UI・opt-out・
+  // 匿名化方針を先に固めてから着手すること（現時点では意図的に未実装）。
   const fetchVoiceInsight = async (analysis: any, rawMetrics: any) => {
     setIsSavingToDB(true);
     try {
@@ -100,6 +111,7 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
           jitter_pct: rawMetrics.jitter,
           shimmer_pct: rawMetrics.shimmer,
           hnr_db: rawMetrics.hnr,
+          // video_biomarkers: undefined, // ← 将来のrPPG/微表情解析用プレースホルダー（未実装）
           condition: condition
         }),
       });
@@ -108,24 +120,41 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
         setInsight(data.insight);
         setTokenReward(data.care_token_reward);
         setAssessmentId(data.assessment_id);
+        setInsightUnavailable(false);
 
         // 🆕 資産確定後、即座に累計残高をリフレッシュ
         refreshEquity(user);
+      } else {
+        setInsightUnavailable(true);
       }
     } catch (error) {
+      // バックエンド未接続時もスキャン結果自体は表示済みのため、
+      // ここでは体験を止めず「AIコメント・報酬は現在取得できません」と明示するだけに留める。
       console.error('❌ Failed to fetch HAIS insight:', error);
+      setInsightUnavailable(true);
     } finally {
       setIsSavingToDB(false);
     }
   };
 
-  const handleComplete = (res: any) => {
+  const handleComplete = (res: any, sample: boolean = false) => {
     const normalization = analyzePolyvagalState({
       jitter: res.jitter,
       shimmer: res.shimmer,
       hnr: res.hnr,
     });
     setAnalysisResult(normalization);
+    setIsSampleResult(sample);
+    setInsight(null);
+    setTokenReward(null);
+    setAssessmentId(null);
+
+    if (sample) {
+      // サンプル結果はバックエンドに送らない。表示のみで完結させる。
+      setInsightUnavailable(true);
+      return;
+    }
+
     fetchVoiceInsight(normalization, res);
 
     const payload = {
@@ -141,6 +170,11 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
       timestamp: normalization.timestamp,
     };
     onScanComplete?.(payload);
+  };
+
+  // スキャン失敗時（マイクなし等）の代替導線。検証用のサンプル値で結果表示のみ体験できるようにする。
+  const handleUseSampleResult = () => {
+    handleComplete({ f0: 178.4, jitter: 0.62, shimmer: 3.1, hnr: 14.2 }, true);
   };
 
   const handleMint = async () => {
@@ -203,9 +237,27 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
         </div>
       </div>
 
+      {/* スキャン失敗時：原因・次の行動・代替入力（サンプル結果）を必ず提示する */}
+      {scanError && !scanning && (
+        <div style={styles.errorCard}>
+          <div style={styles.errorText}>{scanError}</div>
+          <div style={styles.errorActions}>
+            <button onClick={() => startScan(location, condition, handleComplete)} style={styles.errorRetryBtn}>
+              もう一度試す
+            </button>
+            <button onClick={handleUseSampleResult} style={styles.errorSampleBtn}>
+              サンプル結果を見る
+            </button>
+          </div>
+        </div>
+      )}
+
       {analysisResult && s && (
         <div style={styles.results}>
           <div style={{ ...styles.resultStateCard, background: s.bg }}>
+            {isSampleResult && (
+              <div style={styles.sampleBadge}>これは検証用のサンプルデータです。診断・人事評価には使用しません。</div>
+            )}
             <div style={{ color: s.color, fontSize: '26px', fontFamily: "'DM Serif Display', serif" }}>{s.name}</div>
             <div style={{ fontSize: '13px', color: '#8b91a8', margin: '15px 0', lineHeight: 1.6 }}>{s.desc}</div>
 
@@ -224,19 +276,27 @@ export default function VoiceScanner({ onScanComplete }: { onScanComplete?: (pay
               </div>
             )}
 
+            {!insight && insightUnavailable && (
+              <div style={styles.insightUnavailableCard}>
+                {isSampleResult
+                  ? 'サンプル結果のため、AIコメント・Care Equityの付与はありません。'
+                  : '現在、AIコメントとCare Equityの付与を取得できません。状態の記録自体は完了しています。'}
+              </div>
+            )}
+
             <button
               onClick={handleMint}
-              disabled={isMinting || isSavingToDB || minted || analysisResult.dominantState === 'NOISE_DETECTED'}
+              disabled={isMinting || isSavingToDB || minted || isSampleResult || analysisResult.dominantState === 'NOISE_DETECTED'}
               style={{ ...styles.mintButton, borderColor: minted ? '#5ec984' : s.color, color: minted ? '#5ec984' : s.color }}
             >
-              {minted ? `✓ RECORDED IN LEDGER` : `CLAIM CARE EQUITY`}
+              {minted ? `✓ RECORDED IN LEDGER` : isSampleResult ? `SAMPLE - NOT RECORDED` : `CLAIM CARE EQUITY`}
             </button>
           </div>
 
           <div style={styles.metadataCard}>
             <div style={styles.metadataRow}>
               <span>Assessment ID</span>
-              <span style={{ fontSize: '9px' }}>{assessmentId || 'Pending...'}</span>
+              <span style={{ fontSize: '9px' }}>{isSampleResult ? 'SAMPLE' : (assessmentId || 'Pending...')}</span>
             </div>
           </div>
         </div>
@@ -286,4 +346,14 @@ const styles: Record<string, any> = {
   metadataCard: { background: '#111520', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '12px 16px', marginBottom: '12px' },
   metadataRow: { display: 'flex', justifyContent: 'space-between', fontFamily: "'DM Mono', monospace", fontSize: '11px', color: '#8b91a8' },
   mintButton: { width: '100%', padding: '16px', background: 'transparent', border: '1px solid', borderRadius: '12px', fontFamily: "'DM Mono', monospace", fontSize: '12px', letterSpacing: '0.1em', cursor: 'pointer', transition: 'all 0.3s ease', marginTop: '10px' },
+
+  // スキャン失敗時：原因表示＋次の行動（再試行／サンプル結果）
+  errorCard: { background: 'rgba(232,109,109,0.06)', border: '1px solid rgba(232,109,109,0.25)', borderRadius: '14px', padding: '18px 20px', marginBottom: '12px', textAlign: 'left' },
+  errorText: { fontSize: '13px', color: '#e8b0b0', lineHeight: 1.6, marginBottom: '14px' },
+  errorActions: { display: 'flex', gap: '10px' },
+  errorRetryBtn: { flex: 1, padding: '10px', background: 'transparent', border: '1px solid rgba(232,109,109,0.4)', borderRadius: '10px', color: '#e8b0b0', fontSize: '12px', cursor: 'pointer' },
+  errorSampleBtn: { flex: 1, padding: '10px', background: 'transparent', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', color: '#8b91a8', fontSize: '12px', cursor: 'pointer' },
+
+  sampleBadge: { fontSize: '11px', color: '#e8b86d', background: 'rgba(232,184,109,0.08)', border: '1px solid rgba(232,184,109,0.2)', borderRadius: '8px', padding: '8px 12px', marginBottom: '14px', lineHeight: 1.5 },
+  insightUnavailableCard: { fontSize: '12px', color: '#8b91a8', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px 16px', margin: '20px 0', lineHeight: 1.6 },
 };
