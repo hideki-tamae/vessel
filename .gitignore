@@ -59,3 +59,8 @@ public/audit/
 *.mp4
 *.mp3
 *.mov
+
+# Environment files
+.env
+.env.local
+.env*.local
